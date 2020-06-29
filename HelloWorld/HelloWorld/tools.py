@@ -23,50 +23,44 @@
 蓝V:28
 
 '''
-import jieba
-from wordcloud import WordCloud
-import matplotlib.font_manager as fm
-from imageio import imread
-from PIL import Image
-import wordcloud
-import csv
-import numpy as np
+import json
 
-# 生成微博内容词云
-def generateWordCloud(user_id):
-    jpg = imread('cc.jpg')
-    mask = np.array(Image.open('cc.jpg'))
-    image_colors = wordcloud.ImageColorGenerator(mask)
+def writeout():
+    # 模拟数据
+    dict = {
+        "uid":"1740197697",
+        "username":"sfer-何晓昕",
+        "沉寂关注": [
+            [7236957425, 'KK俱乐部_China'],
+            [7239630504, 'KK-Grunt沈哲'],
+            [1752820413, '高以翔Godfrey'],
+            [5149686285, '公子乔一'],
+            [5370284657, '李安琪Angel']],
+        "异常粉丝":[[6340710640, '用户6340710640'],
+                [5362576433, 'YeHongyi'],
+                [2260088181, 'Ga6rie丨'],
+                [3846342412, '音旋在颤谷']],
+        "微博内容关键词": [
+            ('秦昊', 11), ('伊能静', 5), ('大家', 4), ('一起', 3),
+                        ('姐姐', 3), ('爬山', 3), ('隐秘', 3), ('角落', 3),('导演', 3), ('锦绣', 2)],
+    }
+    with open('out.json', 'w') as f:
+        json.dump(dict, f)
 
-    with open("weibo.csv", 'r') as file:
-        reader = csv.reader(file)
-        weibos = list(reader)
+def get_data():
+    dict = json.load(open("/Users/cautious/Documents/GitHub/Weibo/HelloWorld/HelloWorld/out.json"))
+    return dict
 
-    yc_text = ""
-    for weibo in weibos:
-        if weibo[1] == user_id:
-            if weibo[9] == '0':
-                repost_text += weibo[2]
-            elif weibo[9] == '1':
-                yc_text += weibo[2]
+def keyword():
+    dict = json.load(open("/Users/cautious/Documents/GitHub/Weibo/HelloWorld/HelloWorld/out.json"))
+    kw=dict['微博内容关键词']
+    print(kw)
 
-    f = open("baidu_stopwords.txt", "r")
-    stopwords = {}.fromkeys(f.read().split("\n"))
-    f.close()
+def chenji():
+    dict = json.load(open("/Users/cautious/Documents/GitHub/Weibo/HelloWorld/HelloWorld/out.json"))
+    kw = dict['沉寂关注']
 
-    jieba.load_userdict("baidu_stopwords.txt")
-    segs = jieba.cut(yc_text)
+    return kw
 
-    mytext_list = []
-    for seg in segs:
-        if seg not in mytext_list and seg != "" and len(seg) != 1:
-            mytext_list.append(seg.replace(" ", ""))
-    yc_text = ",".join(mytext_list)
-    print(yc_text)
-
-    if len(yc_text) > 0:
-        wc = WordCloud(background_color="white", max_words=200, min_font_size=10, max_font_size=35, width=400,
-                       font_path="/Users/wu/Downloads/msyh/msyh.ttf", mask=mask, color_func=image_colors)
-        wc.generate(yc_text)
-        file_path = user_id + "_yc" + ".png"
-        wc.to_file(file_path)
+writeout()
+chenji()
