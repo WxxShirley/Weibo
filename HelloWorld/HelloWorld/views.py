@@ -1,19 +1,14 @@
 from django.shortcuts import render
 from . import data_utils
+from . import tools
 
 wb=data_utils.WeiboCrawler('1740197697')
 # wb.start()
 
-
 def index(request):
     # wb=data_utils.WeiboCrawler('1740197697')
     # wb.start()
-    context = {}
-
-    context['user_id']=wb.user_id
-
-    context['关键词']=wb.keywors
-    print(wb.keywors)
+    context = tools.get_data()
 
     return render(request, 'index.html', context)
 
@@ -26,6 +21,14 @@ def runoob(request):
 def about(request):
     context = {}
     return render(request, 'about.html', context)
+
+def contact(request):
+    context = {}
+    return render(request, 'contact.html', context)
+
+def intro(request):
+    context = {}
+    return render(request, 'intro.html', context)
 
 
 

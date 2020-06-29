@@ -639,7 +639,7 @@ if __name__ == "__main__":
     #wb = WeiboCrawler("6338550883")
     #wb = WeiboCrawler("5649502573")
     #wb = WeiboCrawler("1776448504")
-    wb = WeiboCrawler("1740197697")
+    wb = WeiboCrawler("3227027755")
     wb.start()
 
     time_end=time.time()
