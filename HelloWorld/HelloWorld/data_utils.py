@@ -41,7 +41,11 @@ import wordcloud
 from pyecharts import options as opts
 from pyecharts.charts import Geo,Page,Graph
 from pyecharts.globals import ChartType, SymbolType
+# render HTML
 from pyecharts.render import make_snapshot
+
+
+# render png
 #from snapshot_phantomjs import snapshot
 
 
