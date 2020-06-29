@@ -118,7 +118,148 @@
           </div>
         </div>
       </div>
+</section>
+
+ <section class="probootstrap-section probootstrap-bg-dark">
+      <div class="container">
+        <div class="row mb-5 justify-content-center text-center">
+          <div class="col-md-8">
+            <h2 class="probootstrap-heading">特征生成与分析</h2>
+            <p>对于微博，人们在其上浏览、发布、转发和评论信息，而信息传播主要依赖于用户间社会性的交往与互动，在微博中这种社会关系是由用户间的 “关注—被关注”体现出来，它是现实世界中社会关系在社交网络中的复制和重构。基于此，垃圾应该产生于内容信息、用户行为和社会关系 3 方面， 故从这 3 个方面定义特征。</p>
+
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md">
+            <div class="media d-block mb-4">
+                <img src="/static/images/社会特征.png" alt="" class="img-fluid mb-3 rounded">
+              <div class="media-body p-3">
+                <h5 class="mt-0">社会特征</h5>
+                  <p></p>
+                <p>关注数 (F1)</p>
+                  <p>粉丝数 (F2)</p>
+                  <p>关注粉丝比 (F3)</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md">
+            <div class="media d-block mb-4">
+                <img src="/static/images/行为特征.png" alt="" class="img-fluid mb-3 rounded">
+              <div class="media-body p-3">
+                <h5 class="mt-0">用户行为特征</h5>
+                  <p></p>
+                <p>月均微博 (F4)</p>
+                  <p>时间间隔 (F5)</p>
+                  <p>转发比 (F6)</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md">
+            <div class="media d-block mb-4">
+                <img src="/static/images/内容特征.png" alt="" class="img-fluid mb-3 rounded">
+              <div class="media-body p-3">
+                <h5 class="mt-0">内容特征</h5>
+                 <p></p>
+                <p>URL 链接比 (F7)</p>
+                  <p>微博评论比 (F8)</p>
+                  <p>原创微博评论比 (F9) </p>
+                  <p>微博平均长度 (F10) </p>
+                  <p>博文余弦相似度(F11、F12)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
+
+
+
+    <section class="probootstrap-section">
+      <div class="container">
+          <div class="row mb-5 justify-content-center text-center">
+          <div class="col-md-8">
+            <h2 class="probootstrap-heading">模型</h2>
+            <p>由于分类器对样本数量的敏感度、特征之间相关度的敏感度等均不相同，故选择不同的分类器得到的分类效果往往不同。我们使用了 7 个经典的分类器进行实验</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+
+              <div class="media-body">
+                <h5 class="mt-0">Naive Bayes (NB)</h5>
+                <p>基于贝叶斯定理与特征之间独立假设基础之上，根据某对象的先验概率利用贝叶斯公式 计算出其后验概率，选择具有最大后验概率的类作为该对象所属的类</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+
+              <div class="media-body">
+                <h5 class="mt-0">logistic regression (LR)[</h5>
+                <p>使用逻辑回归 sigmod 函数来计算后验概率，根据后验概率对所给对象进行分类识别</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+
+              <div class="media-body">
+                <h5 class="mt-0">support vector machine (SVM)</h5>
+                <p>建立在统计学理论中的结构风险最小化准则基础上，原理是将低维空间的点映射到高维空间，使它们成为线性可分，再使用线性划分的原理来判断分类边界</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+              <div class="media-body">
+                <h5 class="mt-0">k-nearest neighbor (kNN)</h5>
+                <p>一种基于实例学习的非参数估计的分类方法，计算新样本与训练样本之间的距离，找到距离最近的 k 个邻居，如果邻居的大多数属于某一个类别，则该样本也属于这个类别</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+              <div class="media-body">
+                <h5 class="mt-0">AdaBoost.M1 (ABM1)</h5>
+                <p>一种提高给定学习算法精度的方法，使用同一个训练集训练不同的弱分类器，然后把这些弱分类器集合起来，构成一个强的最终分类器</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+              <div class="media-body">
+                <h5 class="mt-0">decision trees (DT)</h5>
+                <p>一种简单且快速的非参数树状分类方法，利用信息增益率来选择特征，将信息增益率最大的特征作为决策树的分裂节点，每个分支均重复这一过程</p>
+              </div>
+            </div>
+          </div>
+            <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="media mb-4">
+              <div class="media-body">
+                <h5 class="mt-0">random forest (RF)</h5>
+                <p>以决策树为基本分类器的一个集成学习分类方法，它包含多个由 BA 集成学习技术训练 得到的决策树，当输入待分类的样本时，最终的分类结果由单个决策树的输出结果投票决定</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<section class="probootstrap-section probootstrap-scene-1 probootstrap-bg-dark">
+      <div class="container ">
+        <div class="row mb-5 justify-content-center text-center">
+          <div class="col-lg-8">
+            <h2 class="probootstrap-heading">评价方法与实验结果</h2>
+              <p class="mb-5 lead">对于一个模型的好坏，常常采用一系列指标来评价。往往评价指标分数越高，则反映模型更准确，具有更好的泛化性等。</p>
+              <img src="/static/images/结果.png" width="800px" height="600px">
+
+          </div>
+        </div>
+      </div>
+    </section>
+
 
 
 
