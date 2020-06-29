@@ -24,6 +24,7 @@
 
 '''
 import json
+import shutil
 
 def writeout():
     # 模拟数据
@@ -48,16 +49,20 @@ def writeout():
         json.dump(dict, f)
 
 def get_data():
-    dict = json.load(open("/Users/cautious/Documents/GitHub/Weibo/HelloWorld/HelloWorld/out.json"))
+    # YOUR PATH of (1740197697.json)
+    dict = json.load(open("/Users/wu/Downloads/Weibo-master/HelloWorld/HelloWorld/1740197697.json",encoding='utf-8-sig'))
+    length = len(dict["spammer"])
+    if length>5: #只显示至多6位用户的
+        dict["spammer"] = dict["spammer"][:6]
     return dict
 
 def keyword():
-    dict = json.load(open("/Users/cautious/Documents/GitHub/Weibo/HelloWorld/HelloWorld/out.json"))
+    dict = json.load(open("/Users/wu/Downloads/Weibo-master/HelloWorld/HelloWorld/out.json"))
     kw=dict['微博内容关键词']
     print(kw)
 
 def chenji():
-    dict = json.load(open("/Users/cautious/Documents/GitHub/Weibo/HelloWorld/HelloWorld/out.json"))
+    dict = json.load(open("/Users/wu/Downloads/Weibo-master/HelloWorld/HelloWorld/out.json"))
     kw = dict['沉寂关注']
 
     return kw

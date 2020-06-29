@@ -37,7 +37,20 @@ from imageio import imread
 from PIL import Image
 import wordcloud
 
+
+from pyecharts import options as opts
+from pyecharts.charts import Geo,Page,Graph
+from pyecharts.globals import ChartType, SymbolType
+# render HTML
+from pyecharts.render import make_snapshot
+
+
+# render png
+#from snapshot_phantomjs import snapshot
+
+
 cookie = "_T_WM=78522337846; _WEIBO_UID=6338550883; ALF=1593420147; WEIBOCN_FROM=1110006030; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WFh5n7HVJ-FC_saEzTIUpWT5JpX5K-hUgL.Foq0e0nfSK5R1he2dJLoIE-LxKBLB.2L12eLxKBLB.2L12eLxKBLB.2L12eLxKBLB.2L12Sh; SCF=ArjvLMxbY0E12ZIGg5Ml4_tjYAIWb20vYroqWzb1N4UacjgEEO_uBEpuja35r1KGEe_OKcN2AgVlKUy6Wm5GnOc.; SUB=_2A25z1m2gDeRhGeBN6FoU9S7Ewz-IHXVROXPorDV6PUJbktANLWrckW1NRGUWZDrJuznhlfpwY18qqax4Rr6jn_AF; SUHB=0sqxtPPVOJ2rQX; SSOLoginState=1590828528; XSRF-TOKEN=c3f14d; MLOGIN=1; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D1076033864109310%26fid%3D1005053864109310%26uicode%3D10000011"
+
 
 
 # 文本计算相关函数
@@ -136,9 +149,11 @@ def seg_sentence(sentence):
 class WeiboCrawler(object):
     def __init__(self,user_id):
         self.user_id = user_id
+        self.user_name = ""
 
         self.followers_count = 100 #粉丝数，如果没有获取到默认爬100位
         self.follow_count = 100 #关注数，如果没有获取到默认爬100位
+        self.weibo_num = 50 #微博数，如果没有获取到默认爬50条
 
         self.follows_id = []
         self.follows = [] #关注的人=> 异常关注、沉寂关注
@@ -147,7 +162,7 @@ class WeiboCrawler(object):
         self.weibos = [] #微博内容
         self.weibo_id_list = []
         self.follows_weibo = [] #关注的人的最近微博时间，判断是否是沉寂关注
-
+        
         self.keywors = [] #根据微博内容统计关键字
         self.inactive_follows_id = []# 沉寂关注
         self.mutualFansNum = 0
@@ -156,6 +171,11 @@ class WeiboCrawler(object):
 
         self.red_v = 0 #关注的人中红V
         self.blue_v = 0 #关注的人中蓝V
+        
+        # id到头像url的映射
+        self.id2profile = {}
+        # 用户地区
+        self.location = "其他"
 
 
     def getFollow(self):
@@ -191,10 +211,12 @@ class WeiboCrawler(object):
                             self.red_v +=1
                         else:
                             self.blue_v +=1
+                    self.id2profile[id] = profile_url
                     self.follows.append([id,label,profile_url,gender,descrip,weibo_num,fans_num,follow_num, verified, urank, mbrank])
             except Exception as e:
-                return
-
+                print("Crawl Follow error:"+str(e))
+                return 
+    
     def getFans(self):
         """ 爬取粉丝的信息集合 """
         pages = (int)(self.followers_count/10)
@@ -220,18 +242,19 @@ class WeiboCrawler(object):
                     verified = i['user']['verified']
                     urank = i['user']['urank']
                     mbrank = i['user']['mbrank']
+                    self.id2profile[id] = profile_url
                     self.fans.append([id,label,profile_url,gender,descrip,weibo_num,fans_num,follow_num, verified, urank, mbrank])
             except Exception as e:
-                return
-
+                return 
+    
     def computeMutualNum(self):
         """ 计算用户的互粉数目 """
         # 比较follows_id和fans_id的交集
         mutual_fans = (set(self.fans_id)&set(self.follows_id))
         self.mutualFansNum = len(mutual_fans)
-
-
-
+        
+        
+    
     def handle_html(self, url):
         """ 处理html """
         try:
@@ -240,7 +263,7 @@ class WeiboCrawler(object):
             return selector
         except Exception as e:
             print('Error: ', e)
-
+    
     def is_date(self, since_date):
         """ 判断日期格式是否正确 """
         try:
@@ -251,7 +274,7 @@ class WeiboCrawler(object):
             return True
         except ValueError:
             return False
-
+    
     def get_one_weibo(self,info):
         """ 获取一条微博的全部信息 """
         try:
@@ -286,7 +309,7 @@ class WeiboCrawler(object):
             if weibo_info:
                 weibo = self.parse_weibo(weibo_info)
                 return weibo
-
+    
     def standardize_date(self,created_at):
         """ 标准化微博发布时间 """
         if u"刚刚" in created_at:
@@ -306,7 +329,7 @@ class WeiboCrawler(object):
             year = datetime.now().strftime("%Y")
             created_at = year + "-" + created_at
         return created_at
-
+    
     def parse_weibo(self,weibo_info):
         weibo = {}
         if weibo_info['user']:
@@ -341,13 +364,15 @@ class WeiboCrawler(object):
         elif string.endswith(u'万'):
             string = int(string[:-1]+'0000')
         return int(string)
+    
 
-
-
+    
     def getWeibos(self):
         """ 爬取用户的微博内容 """
         # 先爬最近的4页内容
-        for page in range(3):
+        page = (int)(self.weibo_num/20)
+        page = min(page,50)
+        for page in range(page+1):
             params = {'containerid':'107603'+str(self.user_id),'page':page}
             url = "https://m.weibo.cn/api/container/getIndex?"
             try:
@@ -365,7 +390,56 @@ class WeiboCrawler(object):
                                 self.weibo_id_list.append(wb['id'])
             except Exception as e:
                 print(e)
+        print("Weibo length"+str(len(self.weibos)))
+    
+    
+    def weiboMonthDay(self):
+        """ 微博按年月图 """
+        def plot(cnts):
+            month = [i for i in range(1,13)]
+            markers = ['o','*','p','+',]
+            num = 0
+            ys = list(cnts.keys())
+            if len(ys)==1 and ys[0]=="2020": #只有2020年，则只画2020年,且到6月份
+                month_new = [i for i in range(1,7)]
+                lis = list(cnts[ys[0]].values())
+                lis = lis[:6]
+                plt.plot(month_new,lis,marker=markers[num],label=ys[num])
+            else:
+                for cnt in cnts.values():
+                    lis = list(cnt.values())
+                    plt.plot(month,lis,marker=markers[num],label=ys[num])
+                    num+=1
+                    if num>3:
+                        break
+            plt.xlabel('month')
+            plt.ylabel('#weibos')
+            plt.legend()
+            plt.xticks(month,month,rotation=1)
+            filepath = "./derived/date_"+self.user_id+".png"
+            plt.savefig(filepath)
 
+        years = []
+        for weibo in self.weibos:
+            time = weibo['created_at'].split("-")
+            year,month,day = time[0],time[1],time[2]
+            if year not in years:
+                years.append(year)
+        
+        user_cnt = {}
+        for year in years:
+            user_cnt[year]={"01":0,"02":0,"03":0,"04":0,"05":0,"06":0,"07":0,"08":0,"09":0,"10":0,"11":0,"12":0}
+    
+        for weibo in self.weibos:
+            time = weibo['created_at'].split("-")
+            year,month,day = time[0],time[1],time[2]
+            user_cnt[year][month]+=1
+        plot(user_cnt)
+
+
+        
+
+    
     def getKeyWords(self):
         """ 根据微博文本内容统计关键词 """
         text = ""
@@ -382,30 +456,33 @@ class WeiboCrawler(object):
                 wcdict[word] = wcdict.get(word,0)+1
         wcls = list(wcdict.items())
         wcls.sort(key=lambda x:x[1],reverse=True)
-
+         
         xx=['他们','没有','自己','一个','什么','这样','知道','我们','这个','这些','不过','已经','要是','觉得','那样','而且',"微博","转发","通过","现在","有人","时候"]
 
         for pair in wcls[:10]:
             if pair[0] not in xx:
                 self.keywors.append(pair)
-            # 生成词云
-            jpg = imread('cc.jpg')
-            mask = np.array(Image.open('cc.jpg'))
-            image_colors = wordcloud.ImageColorGenerator(mask)
-            text_list = []
-            for seg in segs:
-                if seg != "" and len(seg) != 1:
-                    text_list.append(seg.replace(" ", ""))
-            yc_text = ",".join(text_list)
-            if len(yc_text) > 0:
-                wc = WordCloud(background_color="white", max_words=200, min_font_size=10, max_font_size=35, width=400,
-                               font_path="/Users/cautious/Downloads/msyh/msyh.ttf", mask=mask, color_func=image_colors)
-                wc.generate(yc_text)
-                file_path = self.user_id + "_yc" + ".png"
-                wc.to_file(file_path)
-
+        
+        #生成词云
+        jpg = imread('cc.jpg')
+        mask = np.array(Image.open('cc.jpg'))
+        image_colors = wordcloud.ImageColorGenerator(mask)
+        text_list = []
+        
+        for (word,cnt) in wcls:
+            times = min(cnt,30)
+            for i in range(times):
+                text_list.append(word)
+        yc_text = ",".join(text_list)
+        if len(yc_text)>0:
+            wc = WordCloud(background_color="white",max_words=300,min_font_size=15,repeat=False,max_font_size=50,width=400,font_path="/Users/wu/Downloads/msyh/msyh.ttf",mask=mask,color_func=image_colors)
+            #wc.generate(yc_text)
+            wc.generate_from_frequencies(dict(wcls))
+            file_path = "./derived/kw_"+self.user_id+".png"
+            wc.to_file(file_path)
+    
+        
     def get_inactive(self):
-
         """ 获取用户沉寂关注的集合 """
         for id in self.follows_id:
             screen_name = ' '
@@ -434,13 +511,14 @@ class WeiboCrawler(object):
                             lis.append(weibo)
                             screen_name = weibo['screen_name']
                     if flag==False:
-                        self.inactive_follows_id.append([id,screen_name])
+                        his_profile = self.id2profile[id]
+                        self.inactive_follows_id.append([screen_name,his_profile])
                 #if len(lis)>0:
                 #    self.follow_id2weibo[id]=lis # 对该用户的一页微博内容进行保存
             except Exception as e:
                 print("Error"+str(e))
-                return
-
+                return 
+    
     def load_fans_weibo(self):
         """ 爬取粉丝的微博 """
         for id in self.fans_id:
@@ -470,7 +548,7 @@ class WeiboCrawler(object):
                     self.follow_id2weibo[id]=lis # 对该用户的一页微博内容进行保存
             except Exception as e:
                 print("Error"+str(e))
-                return
+                return 
 
 
     def get_spammer(self):
@@ -492,8 +570,8 @@ class WeiboCrawler(object):
             F2 = follower
             F4 = followee_follower_ration
             F7 = weibo
-
-
+            
+            
             if user[0] not in self.follow_id2weibo.keys():
                 continue
 
@@ -501,7 +579,7 @@ class WeiboCrawler(object):
 
             # F9-时间间隔， F10-转发比， F11-url链接比，F12-微博评论比，F13-原创微博评论比，F14-微博平均长度，F15-微博余弦相似度, F16-模相似度
             origins , comments , origin_comments ,lens, total_len, contain_url_num = 0,0,0,0,len(weibos),0
-
+           
             date_contents = {}
 
             for weibo in weibos:
@@ -533,7 +611,7 @@ class WeiboCrawler(object):
             else:
                 F13 = round(origin_comments/origins,2)
             F14 = round(lens/total_len,2)
-
+            
             # 计算微博内容余弦相似度
             mylist = []
             for date,content in date_contents.items():
@@ -549,20 +627,21 @@ class WeiboCrawler(object):
             for i in mylist:
                 sum+=one_day_sim(i)
             F16 = round(sum/len(mylist),2)
-
+            
             #一共有F1,F2,F4,F7,F9,F10,F11,F12,F13,F14,F15,F16
             #print(F1,F2,F4,F7,F9,F10,F11,F12,F13,F14,F15,F16)
             X = [[F1,F2,F4,F7,F9,F10,F11,F12,F13,F14,F15,F16]]
             X = np.array(X)
             X = np.nan_to_num(X)
-
+            
             # 跑我们训练好的模型即可
             clf = joblib.load('RF.pkl')
             y_pred = clf.predict(X)
             print(user[1],"预测结果（0为正常用户，1为虚假用户)",y_pred[0])
             if y_pred[0]==1:
-                self.follow_spammer.append([user[0],user[1]])
-
+                his_profile = self.id2profile[user[0]]
+                self.follow_spammer.append([user[1],his_profile])
+            
     def get_user_info(self):
         """ 获取用户的粉丝数，关注数 """
         params = {'containerid':'100505'+str(self.user_id)}
@@ -574,9 +653,15 @@ class WeiboCrawler(object):
                 info = js['data']['userInfo']
                 self.followers_count = info.get('followers_count', 0)
                 self.follow_count = info.get('follow_count', 0)
+                self.weibo_num = info.get('statuses_count',30)
+                self.user_name = info.get('screen_name',"")
+                # 获取用户地区
+                self.location = self.getLocation(self.user_id)
+                print(self.location)
+                
         except Exception as e:
             print(e)
-
+    
     def computeFollowTextSim(self):
         """ 计算和用户微博内容相似度高的关注的人 """
         pass
@@ -584,6 +669,97 @@ class WeiboCrawler(object):
     def verified_analysis(self):
         """ 计算关注的人中已经认证的 """
         pass
+    
+    def getLocation(self,id):
+        """ 指定id，得到该用户的地区 """
+        url = "https://m.weibo.cn/api/container/getIndex?"
+        location = "其他"
+        try:
+            new_params =  {'containerid':'230283' + str(id) + '_-_INFO'}
+            r = requests.get(url,params=new_params,headers = {"Cookie":cookie})
+            data = r.json()
+                
+            if data['ok']:
+                cards = data['data']['cards']
+                if isinstance(cards, list) and len(cards)>1:
+                    card_list = cards[0]['card_group'] + cards[1]['card_group']
+                    for card in card_list:
+                        if card.get('item_name') == "所在地":
+                            location = card.get('item_content')
+                            location = location.split(" ")[0] #获得省份
+        except Exception as e:
+            print("GET LOCATION ERRPR"+str(e))
+        return location
+
+
+    def NetworkChineseMap(self):
+        """ 形成关注的人和粉丝的中国地区 """
+        # 关注的人的地域
+        url = "https://m.weibo.cn/api/container/getIndex?"
+        provin = '北京，天津，上海，重庆，河北，山西，辽宁，吉林，黑龙江，江苏，浙江，安徽，福建，江西，山东，河南，湖北，湖南，广东，海南，四川，贵州，云南，陕西，甘肃，青海，台湾，内蒙古，广西，西藏，宁夏，新疆，香港，澳门'
+        provins = provin.split("，")
+        
+        follow_provins , fans_provins = [], []
+
+        for id in self.follows_id:
+            try:
+                location = self.getLocation(id)
+                if location in provins:
+                    follow_provins.append(location)
+            except Exception as e:
+                print(e)
+        
+        for id in self.fans_id:
+            try:
+                location = self.getLocation(id)
+                if location in provins:
+                    fans_provins.append(location)
+            except Exception as e:
+                print(e)
+        
+        follow_cnt = Counter(follow_provins)
+        fans_cnt = Counter(fans_provins)
+
+        follow_key = [key for key in follow_cnt.keys()]
+        fans_key = [key for key in fans_cnt.keys()]
+        keys = set(follow_key+fans_key)
+        pairs = []
+        minv,maxv = 1,0
+        for key in keys:
+            cnt = 0
+            if key in follow_key:
+                cnt+=follow_cnt[key]
+            if key in fans_key:
+                cnt+=fans_cnt[key]
+            minv = min(minv,cnt)
+            maxv = max(maxv,cnt)
+            pairs.append([key,cnt]) #省份，对应的人数
+        
+        edge1 = [(self.location,key) for key in follow_key] #从用户省份指向关注的人
+        edge2 = [(key,self.location) for key in fans_key] # 从用户粉丝地区指向用户省份
+        new_edges = edge1+edge2
+
+        print(new_edges)
+
+        c = ( 
+           Geo()
+           .add_schema(maptype="china",)
+           .add("城市",pairs,type_=ChartType.HEATMAP)
+           .set_series_opts(label_opts=opts.LabelOpts(is_show=False))
+           .set_global_opts(
+               visualmap_opts=opts.VisualMapOpts(),
+               title_opts=opts.TitleOpts(title="城市分布"),
+            )
+           .add("流向",new_edges,type_=ChartType.LINES, linestyle_opts=opts.LineStyleOpts(curve=0.3,color="#63B8FF"),
+             effect_opts=opts.EffectOpts(symbol=SymbolType.ARROW,symbol_size=1,color="#FF7F00"),
+             label_opts=opts.LabelOpts(is_show=False)
+            )
+           .set_global_opts(
+              visualmap_opts=opts.VisualMapOpts(min_=minv,max_=maxv)
+           )
+        )
+        return c
+
 
 
     def start(self):
@@ -595,15 +771,27 @@ class WeiboCrawler(object):
         self.computeMutualNum()
         self.getWeibos()
         self.getKeyWords()
-        #print(self.keywors)
         self.get_inactive()
-
-
+        
         try:
             self.get_spammer()
         except Exception as e:
             print("ERROR SPAMMER:"+str(e))
+        
+        #生成地域图
+        provin = '北京，天津，上海，重庆，河北，山西，辽宁，吉林，黑龙江，江苏，浙江，安徽，福建，江西，山东，河南，湖北，湖南，广东，海南，四川，贵州，云南，陕西，甘肃，青海，台湾，内蒙古，广西，西藏，宁夏，新疆，香港，澳门'
+        provins = provin.split("，")
+        if self.location in provins:
+            path = "./derived/region_"+self.user_id+".png"
+            # 确保正确配置
+            # make_snapshot(snapshot,self.NetworkChineseMap().render(),path)
 
+            #生成html网页的代码
+            path = "./derived/region_"+self.user_id+".html"
+            self.NetworkChineseMap().render(path)
+        
+        #生成微博时间图
+        self.weiboMonthDay()
 
         # 展示结果的，可以全部注释
         print('='*50+"互相关注的用户:"+str(self.mutualFansNum)+'='*50)
@@ -616,17 +804,37 @@ class WeiboCrawler(object):
         print('='*50+"沉寂关注"+'='*50)
         for user in self.inactive_follows_id:
             print(user)
-
+        
         print( )
-
+        
         print('='*50+"异常粉丝"+'='*50)
         for user in self.follow_spammer:
             print(user)
-
+        
         print('='*50+"关注分布"+'='*50)
         print("红V与橙V数量:"+str(self.red_v))
         print("蓝V:"+str(self.blue_v))
+        
+        # 导出JSON
+        output = {
+            'uid':self.user_id,
+            'user_name':self.user_name,
+            'keyword_path':"./derived/kw_"+self.user_id+".png",
+            "region_path":"./derived/region_"+self.user_id+".png",
+            "time_path":"./derived/date_"+self.user_id+".png",
+            "spammer":self.follow_spammer,  # List [[username,profile_url],...]
+            "inactive_follow":self.inactive_follows_id,  # List [[username,profile_url],...]
+            "red_v": self.red_v, #int
+            "blue_v":self.blue_v, #int
+        }
 
+        output_path = self.user_id+".json"
+        with open(output_path,'w',encoding="utf-8-sig") as file:
+            json.dump(output,file,indent=2, ensure_ascii=False)
+        file.close()
+
+
+        
 
 if __name__ == "__main__":
     f = open("baidu_stopwords.txt","r")
@@ -636,24 +844,11 @@ if __name__ == "__main__":
 
     time_start=time.time()
 
-    #wb = WeiboCrawler("6338550883")
-    #wb = WeiboCrawler("5649502573")
-    #wb = WeiboCrawler("1776448504")
-    wb = WeiboCrawler("3227027755")
+    wb = WeiboCrawler("1740197697") # id: [6338550883, 1740197697,1776448504, 5649502573]
     wb.start()
 
     time_end=time.time()
     print('-'*120)
     print('Time Cost',time_end-time_start,'/s')
 
-
-    """
-    数据格式说明
-      互相关注的用户数: wb.mutualFansNum  (int型)
-      微博内容关键词: wb.keywors  (List型 ， (word, 次数),比如('爬山',4) )
-      沉寂关注： wb.inactive_follows_id (List型， 每一个元素是[id,昵称]的形式, 比如[1740661795, '电影风中有朵雨做的云'] )
-      异常粉丝:  wb.follow_spammer (List型， 每一个元素是[id,昵称]的形式, 比如[5675324903, 'DDuppp'])
-      关注分布： 
-          红V与橙V数量 ： wb.red_v int型
-          蓝V: wb.blue_v int型
-    """
+   
