@@ -2,7 +2,7 @@ from django.shortcuts import render
 from . import data_utils
 from . import tools
 
-wb=data_utils.WeiboCrawler('1740197697')
+# wb=data_utils.WeiboCrawler('1740197697')
 # wb.start()
 
 def index(request):
