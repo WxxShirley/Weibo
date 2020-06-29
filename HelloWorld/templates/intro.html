@@ -1,0 +1,51 @@
+{%extends "index.html" %}
+
+{% block mainbody %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark probootstrap-navabr-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/index">社交网络挖掘@2020</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#probootstrap-nav" aria-controls="probootstrap-nav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="probootstrap-nav">
+          <ul class="navbar-nav ml-auto">
+              <li class="nav-item"><a href=/index class="nav-link">Home</a></li>
+              <li class="nav-item active"><a href="/intro" class="nav-link">Intro</a></li>
+              <li class="nav-item "><a href="/about" class="nav-link">About</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <section class="probootstrap-section probootstrap-scene-1 probootstrap-bg-dark">
+      <div class="container ">
+        <div class="row mb-5 justify-content-center text-center">
+          <div class="col-lg-8">
+            <h2 class="probootstrap-heading">数据集构建</h2>
+            <p class="mb-5 lead">爬取新浪微博数据：用户个人信息、微博内容、关注的人、粉丝...</p>
+          </div>
+        </div>
+      </div>
+      <div class="container-fluid mb-5">
+        <div class="row">
+          <div class="col-md-12">
+
+            <div class="probootstrap-devices">
+<div class="container-fluid mb-5">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="probootstrap-devices">
+              <img src="/static/images/device_1.png" class="probootstrap-device-left img-fluid" alt="Free Bootstrap 4 Template by uicookies.com">
+              <img src="/static/images/device_2.png" class="probootstrap-device-right img-fluid" alt="Free Bootstrap 4 Template by uicookies.com" class="img-fluid">
+              <img src="/static/images/device_3.png" class="probootstrap-device-center img-fluid" alt="Free Bootstrap 4 Template by uicookies.com">
+            </div>
+          </div>
+        </div>
+      </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% endblock %}
