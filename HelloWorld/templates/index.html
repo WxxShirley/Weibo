@@ -53,15 +53,15 @@
         </div>
       </div>
     </section>
+
     
     <section class="probootstrap-section probootstrap-scene-1 probootstrap-bg-dark">
       <div class="container ">
         <div class="row mb-5 justify-content-center text-center">
           <div class="col-lg-8">
             <h2 class="probootstrap-heading">微博关键词</h2>
-              <p class="mb-5 lead">//to do: 介绍用户词云的生成方法</p>
-              <img src="/static/images/kw_{{uid}}.png" width="400px" height="550px">
-
+              <p class="mb-5 lead">根据用户微博内容，统计词频，生成词云</p>
+              <img src={{ keyword_path }} width="400px" height="550px">
           </div>  
         </div>
       </div>
@@ -73,8 +73,8 @@
             <div class="col-md-6 text-center">
               <div class="probootstrap-text">
               <h1 class="probootstrap-heading text-white mb-5">沉寂关注</h1>
-                  {% for i in 沉寂关注 %}
-                      <p class="mb-5 probootstrap-stagger lead">{{i.1}} &nbsp ({{ i.0 }}) </p>
+                  {% for i in inactive_follow %}
+                      <p class="mb-5 probootstrap-stagger lead">{{i.0}} &nbsp <img src={{ i.1 }} width="40px" height="40px"> </p>
                   {% endfor %}
 {#                <p class="mb-5 lead">已经半年没有发过微博</p>#}
             </div>
@@ -90,8 +90,8 @@
               <div class="col-md-6 text-center">
                 <div class="probootstrap-text">
                 <h1 class="probootstrap-heading text-white mb-5">异常粉丝</h1>
-                    {% for i in 异常粉丝 %}
-                      <p class="mb-5 probootstrap-stagger lead">{{i.1}} &nbsp ({{ i.0 }}) </p>
+                    {% for i in spammer %}
+                        <p class="mb-5 probootstrap-stagger lead">{{i.0}} &nbsp <img src={{ i.1 }} width="40px" height="40px"  border-radius="50%"> </p>
                   {% endfor %}
               </div>
             </div>
@@ -100,6 +100,7 @@
       </section>
 
 
+      <!--
       <section class="probootstrap-cover probootstrap-scene-0">
       <div class="container">
         <div class="row probootstrap-vh-100 align-items-center  text-md-left text-sm-center text-center">
@@ -116,17 +117,21 @@
         </div>
       </div>
       </section>
+      -->
+
+
 
       <section class="probootstrap-cover probootstrap-scene-0 probootstrap-bg-dark">
       <div class="container">
         <div class="row probootstrap-vh-100 align-items-center  text-md-left text-sm-center text-center">
           <div class="col-md-6 order-md-2 order-1">
-            <img src="/static/images/发文日期.png" class="img-fluid probootstrap-device-vertical-1" alt="Free Bootstrap 4 Template by uicookies.com">
+            <img src={{ time_path }} class="img-fluid probootstrap-device-vertical-1" alt="Free Bootstrap 4 Template by uicookies.com">
           </div>
           <div class="col-md-6 order-md-1 order-2">
             <div class="probootstrap-text">
               <h1 class="probootstrap-heading probootstrap-stagger text-white mb-2">发文日期</h1>
-                <p class="mb-5 probootstrap-stagger lead">//to do: 正常用户在发文时间会有中午高峰期(部分用户晚间也会有高峰期)，符合正常用户日 常通勤的作息。而垃圾用户夜间频率高。</p>
+                <p class="mb-5 probootstrap-stagger lead">该用户在各月份发微博数量</p>
+
             </div>
           </div>
         </div>
@@ -138,20 +143,22 @@
       <div class="container">
         <div class="row probootstrap-vh-100 align-items-center  text-md-left text-sm-center text-center">
           <div class="col-md-6 order-md-1 order-2">
-            <img src="/static/images/地域.png" class="img-fluid probootstrap-device-vertical-1" alt="Free Bootstrap 4 Template by uicookies.com">
+            <img src={{ region_path }} width="800px" class="img-fluid probootstrap-device-vertical-1" alt="Free Bootstrap 4 Template by uicookies.com">
           </div>
           <div class="col-md-6 order-md-2 order-1">
             <div class="probootstrap-text">
               <h1 class="probootstrap-heading probootstrap-stagger text-white mb-2">关注关系地域可视化</h1>
-                <p class="mb-5 probootstrap-stagger lead">//to do: 正常用户在发文时间会有中午高峰期(部分用户晚间也会有高峰期)，符合正常用户日 常通勤的作息。而垃圾用户夜间频率高。</p>
+                <p class="mb-5 probootstrap-stagger lead">该用户部分粉丝和关注的人之间形成的地域关注网络</p>
+
             </div>
           </div>
+
         </div>
       </div>
     </section>
 
 
-
+    <!--
     <section class="probootstrap-section">
       <div class="container">
         <div class="row">
@@ -259,6 +266,9 @@
         </div>
       </div>
     </section>
+      -->
+
+
 
     {% endblock mainbody %}
 
@@ -276,7 +286,7 @@
             </div>
           </div>
           <div class="col-md-7 order-md-1 order-2">
-            <p>&copy; Present 2017. All Rights Reserved. <br> Made with <span class="icon-heart"></span> by <a href="https://uicookies.com/">uiCookies
+            <p>&copy; Present 2020. All Rights Reserved. <br> Made with <span class="icon-heart"></span> by <a href="https://uicookies.com/">uiCookies
 uiCookies</a> Demo Images: <a href="https://unsplash.com/" target="_blank">Unsplash</a></p>
           </div>
         </div>
